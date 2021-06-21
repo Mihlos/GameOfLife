@@ -8,6 +8,7 @@ authors = ["Mihlos <miguel.mish@gmail.com>"]
 python = "^3.8"
 pygame = "^2.0.1"
 numpy = "^1.20.3"
+pydantic = "^1.8.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

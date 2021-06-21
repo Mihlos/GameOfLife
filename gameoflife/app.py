@@ -2,27 +2,25 @@ import pygame
 import numpy as np
 import time
 
-WIDTH, HEIGHT = 800, 800
-nX, nY = 80, 80
-xSize = WIDTH / nX
-ySize = HEIGHT / nY
+from config import sizeConfig, colorConfig
 
-pygame.init()  # Initialize PyGame
+# Initialize PyGame
+pygame.init()
 
-screen = pygame.display.set_mode([WIDTH, HEIGHT])  # Set size of screen
+# Set size of screen
+screen = pygame.display.set_mode([sizeConfig.width, sizeConfig.height])
 
-BG_COLOR = (10, 10, 10)  # Define background color
-LIVE_COLOR = (255, 255, 255)
-DEAD_COLOR = (128, 128, 128)
-# Celdas vivas = 1; Celdas muertas = 0
-status = np.zeros((nX, nY))  # Intialize status of cells
+
+# Alive = 1; Dead = 0
+# Intialize status of cells
+status = np.zeros((sizeConfig.nX, sizeConfig.nY))
 
 pauseRun = False
-
 running = True
+
 while running:
 
-    newStatus = np.copy(status)  # Copy status
+    newStatus = np.copy(status)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -34,48 +32,51 @@ while running:
         mouseClick = pygame.mouse.get_pressed()
         if sum(mouseClick) > 0:
             posX, posY = pygame.mouse.get_pos()
-            x, y = int(np.floor(posX / xSize)), int(np.floor(posY / ySize))
-            # newStatus[x,y] = np.abs(newStatus[x,y]-1)
+            x, y = int(np.floor(posX / sizeConfig.xSize)), int(
+                np.floor(posY / sizeConfig.ySize)
+            )
             newStatus[x, y] = not mouseClick[2]
 
-    screen.fill(BG_COLOR)  # Clean background
+    # Clen screen
+    screen.fill(colorConfig.bg)
 
-    for x in range(0, nX):
-        for y in range(0, nY):
+    for x in range(0, sizeConfig.nX):
+        for y in range(0, sizeConfig.nY):
 
             if not pauseRun:
 
-                # Numero de vecinos
+                # Number of neightbours
+                # % to toroidal behavour
                 nNeigh = (
-                    status[(x - 1) % nX, (y - 1) % nY]
-                    + status[(x) % nX, (y - 1) % nY]
-                    + status[(x + 1) % nX, (y - 1) % nY]
-                    + status[(x - 1) % nX, (y) % nY]
-                    + status[(x + 1) % nX, (y) % nY]
-                    + status[(x - 1) % nX, (y + 1) % nY]
-                    + status[(x) % nX, (y + 1) % nY]
-                    + status[(x + 1) % nX, (y + 1) % nY]
+                    status[(x - 1) % sizeConfig.nX, (y - 1) % sizeConfig.nY]
+                    + status[(x) % sizeConfig.nX, (y - 1) % sizeConfig.nY]
+                    + status[(x + 1) % sizeConfig.nX, (y - 1) % sizeConfig.nY]
+                    + status[(x - 1) % sizeConfig.nX, (y) % sizeConfig.nY]
+                    + status[(x + 1) % sizeConfig.nX, (y) % sizeConfig.nY]
+                    + status[(x - 1) % sizeConfig.nX, (y + 1) % sizeConfig.nY]
+                    + status[(x) % sizeConfig.nX, (y + 1) % sizeConfig.nY]
+                    + status[(x + 1) % sizeConfig.nX, (y + 1) % sizeConfig.nY]
                 )
 
-                # Rule 1: Una celula muerta con 3 vecinas revive
+                # Rule 1: Dead cell with 3 neighbours comes alive
                 if status[x, y] == 0 and nNeigh == 3:
                     newStatus[x, y] = 1
 
-                # Rule 2: Una celula viva con mas de 3 vecinos o menos de 2 muere
+                # Rule 2: Alive cell with more than 3 neigh. or less than 2 -> x_x
                 elif status[x, y] == 1 and (nNeigh < 2 or nNeigh > 3):
                     newStatus[x, y] = 0
 
             poly = [
-                (x * xSize, y * ySize),
-                ((x + 1) * xSize, y * ySize),
-                ((x + 1) * xSize, (y + 1) * ySize),
-                (x * xSize, (y + 1) * ySize),
+                (x * sizeConfig.xSize, y * sizeConfig.ySize),
+                ((x + 1) * sizeConfig.xSize, y * sizeConfig.ySize),
+                ((x + 1) * sizeConfig.xSize, (y + 1) * sizeConfig.ySize),
+                (x * sizeConfig.xSize, (y + 1) * sizeConfig.ySize),
             ]
 
             if newStatus[x, y] == 1:
-                pygame.draw.polygon(screen, LIVE_COLOR, poly, 0)
+                pygame.draw.polygon(screen, colorConfig.live, poly, 0)
             else:
-                pygame.draw.polygon(screen, DEAD_COLOR, poly, 1)
+                pygame.draw.polygon(screen, colorConfig.dead, poly, 1)
 
     status = np.copy(newStatus)
     time.sleep(0.1)
